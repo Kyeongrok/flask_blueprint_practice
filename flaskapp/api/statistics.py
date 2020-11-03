@@ -2,10 +2,74 @@ from sqlalchemy import func
 from flaskapp.models import Person, Death, VisitOccurrence, db
 from flaskapp.utils import get_concepts
 from flask_restplus import Api, Resource, Namespace
-from sqlalchemy.orm import aliased
 
-main = Namespace('statistics', description='main')
+statistics = Namespace('statistics', description='Table의 통계를 보여줍니다.')
 
+@statistics.route("/person")
+class StatisticsPerson(Resource):
+    def get(self):
+        '''
+        person table의 통계를 보여줍니다.
+        전체 환자 수
+        성별 환자 수
+        인종별 환자 수
+        민족별 환자 수
+        사망 환자 수
+        :return: dict
+        '''
+        # return render_template('statistics.html', gr = l)
+        l_gender = count_by_model_concept_id(Person, Person.gender_concept_id, 'gender_concept_id')
+        #ethnicity의 모든 concept_id value는 0이기 때문에 source_value로 하였습니다.
+        l_ethnicity = person_by_source_value(Person.ethnicity_source_value)
+        l_race = count_by_model_concept_id(Person, Person.race_concept_id, 'race_concept_id')
+        i_person = db.session.query(Person).count()
+        i_death = db.session.query(Death).count()
+        return {
+            'Description':'Person에 대한 통계 자료',
+            'Data':{
+                'person_total_cnt':i_person,
+                'death_total_cnt':i_death,
+                'gender':l_gender, 'ethnicity':l_ethnicity, 'race':l_race}
+        }
+
+
+@statistics.route("/visit_occurrence")
+class StatisticsPerson(Resource):
+    def get(self):
+        '''
+        visit(방문) Talbe의 통계를 보여줍니다.
+        방문 유형(입원/외래/응급)별 방문 수
+        성별 방문 수
+        인종별 환자 수
+        민족별 환자 수
+        방문시 연령대(10세 단위)별 환자 수
+        :return: dict
+        '''
+        l_visit_type = count_by_model_concept_id(VisitOccurrence, VisitOccurrence.visit_concept_id, 'visit_concept_id')
+        l_visit_by_gender = visit_by_concept(Person.gender_concept_id, 'gender_concept_id')
+        l_visit_by_ethnicity = visit_by_value('ethnicity_source_value')
+        l_visit_by_race = visit_by_concept(Person.race_concept_id, 'race_concept_id')
+        l_visit_by_age = visit_by_age_range()
+        return {
+            'Description':'환자가 방문한 내역',
+            'Data':{
+                'visit_type':l_visit_type,
+                'visit_by_gender':l_visit_by_gender,
+                'visit_by_ethnicity':l_visit_by_ethnicity,
+                'visit_by_race':l_visit_by_race,
+                'visit_by_age':{
+                    '0=<age<10':l_visit_by_age[0],
+                    '10=<age<20':l_visit_by_age[1],
+                    '20=<age<30':l_visit_by_age[2],
+                    '30=<age<40':l_visit_by_age[3],
+                    '40=<age<50':l_visit_by_age[4],
+                    '50=<age<60':l_visit_by_age[5],
+                    '60=<age<70':l_visit_by_age[6],
+                    '70=<age<80':l_visit_by_age[7],
+                    '80=<age':l_visit_by_age[8]
+                }
+            }
+        }
 def count_by_model_concept_id(model, model_concept_id, column_name):
     d_concept = get_concepts(model_concept_id)
     gr = model.query \
@@ -69,78 +133,6 @@ def visit_by_age_range():
     INNER JOIN person AS p1 ON visit_occurrence.person_id = p1.person_id
     ''')
 
-
     for r in result:
         return list(r)
 
-@main.route("/person")
-class StatisticsPerson(Resource):
-    def get(self):
-        '''
-        각 table의 통계를 보여줍니다.
-        전체 환자 수
-        성별 환자 수
-        인종별 환자 수
-        민족별 환자 수
-        사망 환자 수
-        :return: dict
-        '''
-        # return render_template('statistics.html', gr = l)
-        l_gender = count_by_model_concept_id(Person, Person.gender_concept_id, 'gender_concept_id')
-        #ethnicity의 모든 concept_id value는 0이기 때문에 source_value로 하였습니다.
-        l_ethnicity = person_by_source_value(Person.ethnicity_source_value)
-        l_race = count_by_model_concept_id(Person, Person.race_concept_id, 'race_concept_id')
-        i_person = db.session.query(Person).count()
-        i_death = db.session.query(Death).count()
-        return {
-            'Description':'Person에 대한 통계 자료',
-            'Data':{
-            'person_total_cnt':i_person,
-            'death_total_cnt':i_death,
-            'gender':l_gender, 'ethnicity':l_ethnicity, 'race':l_race}
-        }
-
-@main.route("/test")
-class StatisticsPerson2(Resource):
-    def get(self):
-
-        person_aliased = aliased(Person)
-
-
-
-@main.route("/visit_occurrence")
-class StatisticsPerson(Resource):
-    def get(self):
-        '''
-        방문 유형(입원/외래/응급)별 방문 수
-        성별 방문 수
-        인종별 환자 수
-        민족별 환자 수
-        방문시 연령대(10세 단위)별 환자 수
-        :return: dict
-        '''
-        l_visit_type = count_by_model_concept_id(VisitOccurrence, VisitOccurrence.visit_concept_id, 'visit_concept_id')
-        l_visit_by_gender = visit_by_concept(Person.gender_concept_id, 'gender_concept_id')
-        l_visit_by_ethnicity = visit_by_value('ethnicity_source_value')
-        l_visit_by_race = visit_by_concept(Person.race_concept_id, 'race_concept_id')
-        l_visit_by_age = visit_by_age_range()
-        return {
-            'Description':'환자가 방문한 내역',
-            'Data':{
-                'visit_type':l_visit_type,
-                'visit_by_gender':l_visit_by_gender,
-                'visit_by_ethnicity':l_visit_by_ethnicity,
-                'visit_by_race':l_visit_by_race,
-                'visit_by_age':{
-                    '0=<age<10':l_visit_by_age[0],
-                    '10=<age<20':l_visit_by_age[1],
-                    '20=<age<30':l_visit_by_age[2],
-                    '30=<age<40':l_visit_by_age[3],
-                    '40=<age<50':l_visit_by_age[4],
-                    '50=<age<60':l_visit_by_age[5],
-                    '60=<age<70':l_visit_by_age[6],
-                    '70=<age<80':l_visit_by_age[7],
-                    '80=<age':l_visit_by_age[8]
-                }
-            }
-        }
