@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    {% for person in persons.items %}
+<div>
+    <h3>{{person.person_id}}</h3>
+    <p>{{person.birth_datetime}}</p>
+    <p>{{person.race_concept_id}}</p>
+</div>
+    {% endfor %}
+
+    {% for page_num in persons.iter_pages(left_edge=1, right_edge=1) %}
+        {% if page_num %}
+                {% if persons.page == page_num %}
+            <a class="btn btn-info mb-5" href="{{ url_for('person.idx', page=page_num)}}">{{page_num}}</a>
+                {% else %}
+            <a class="btn btn-outline-info mb-5" href="{{ url_for('person.idx', page=page_num)}}">{{page_num}}</a>
+                {% endif %}
+        {% endif %}
+    {% endfor %}
+{% endblock content %}

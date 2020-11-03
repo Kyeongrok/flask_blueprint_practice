@@ -8,7 +8,7 @@ class Person(db.Model):
     __tablename__ = 'person'
 
     def __repr__(self):
-        return '<Person %r>' % self.id
+        return f"Person('{self.person_id}', '{self.birth_datetime}', '{self.race_concept_id}', '{self.ethnicity_concept_id}')"
 
     person_id = db.Column(db.Integer(), primary_key=True) ##types.BIGINT(),
     gender_concept_id = db.Column(db.Integer(), default=None) ##types.INTEGER(),
@@ -31,3 +31,19 @@ class Person(db.Model):
 
 
 
+class Concept(db.Model):
+    __tablename__ = 'concept'
+
+    def __repr__(self):
+        return f"Concept('{self.concept_id}', '{self.concept_name}', '{self.concept_code}')"
+
+    concept_id = db.Column(db.Integer(), primary_key=True)  #INTEGER(),
+    concept_name = db.Column(db.String(), default=None)  #VARCHAR(length=255),
+    domain_id = db.Column(db.String(), default=None)  #VARCHAR(length=50),
+    vocabulary_id = db.Column(db.String(), default=None)  #VARCHAR(length=50),
+    concept_class_id = db.Column(db.String(), default=None)  #VARCHAR(length=50),
+    standard_concept = db.Column(db.String(), default=None)  #VARCHAR(length=20),
+    concept_code = db.Column(db.Integer(), default=None)  #INTEGER(),
+    valid_start_date = db.Column(db.Date(), default=None)  #Date(),
+    valid_end_date = db.Column(db.Date(), default=None)  #Date(),
+    invalid_reason = db.Column(db.String(), default=None)  #VARCHAR(length=20)

@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div>
+    hello
+
+    {% for person in gr %}
+    <p>{{person.count}} : {{person.concept_name}}</p>
+    {% endfor %}
+</div>
+{% endblock content %}
