@@ -8,7 +8,7 @@ db = SQLAlchemy()
 def create_app(config_class=Config):
     app = Flask(__name__)
     from flaskapp.api.person import person
-    from flaskapp.api.main import main
+    from flaskapp.api.statistics import main
     app.config.from_object(Config)
 
     db.init_app(app)

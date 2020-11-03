@@ -12,7 +12,7 @@ class DbInit():
         self.csv_file_dir = csv_file_dir
 
 
-    def insert_person(self):
+    def person(self):
         df = pd.read_csv('{}/person.csv'.format(self.csv_file_dir))
         df.to_sql(con=self.engine, name='person', index=False, dtype={
             'person_id':sqlalchemy.types.BIGINT(),
@@ -37,7 +37,7 @@ class DbInit():
         with self.engine.connect() as con:
             con.execute('ALTER TABLE person ADD PRIMARY KEY (person_id);')
 
-    def insert_visit_occurrence(self):
+    def visit_occurrence(self):
         df = pd.read_csv('{}/visit_occurrence.csv'.format(self.csv_file_dir))
         df.to_sql(con=self.engine, name='visit_occurrence', index=False, dtype={
             'visit_occurrence_id':sqlalchemy.types.BIGINT(),
@@ -164,7 +164,9 @@ user_id = 'root'
 password = '12345678'
 synthea_cdm_csv_location = 'C:/Users/ocean/Desktop/synthea_cdm_csv/'
 dbi = DbInit('postgresql://{}:{}@127.0.0.1:5432/postgres'.format(user_id,password), synthea_cdm_csv_location)
-dbi.insert_visit_occurrence()
-# dbi.concept()
-# dbi.death()
-
+dbi.person()
+dbi.visit_occurrence()
+dbi.condition_occurrence()
+dbi.drug_exposure()
+dbi.concept()
+dbi.death()

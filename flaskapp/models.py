@@ -47,3 +47,39 @@ class Concept(db.Model):
     valid_start_date = db.Column(db.Date(), default=None)  #Date(),
     valid_end_date = db.Column(db.Date(), default=None)  #Date(),
     invalid_reason = db.Column(db.String(), default=None)  #VARCHAR(length=20)
+
+class Death(db.Model):
+    __tablename__ = 'death'
+
+    def __repr__(self):
+        return f"Death('{self.person_id}', '{self.death_datetime}', '{self.death_type_concept_id}')"
+
+    person_id = db.Column(db.Integer(), primary_key=True)
+    death_date = db.Column(db.Date(), default=None)
+    death_datetime = db.Column(db.DateTime(), default=None)
+    death_type_concept_id = db.Column(db.Integer(), default=None)
+    cause_concept_id = db.Column(db.Integer(), default=None)
+    cause_source_value = db.Column(db.String(), default=None)
+    cause_source_concept_id = db.Column(db.Integer(),default=None)
+
+class VisitOccurrence(db.Model):
+    __tablename__ = 'visit_occurrence'
+
+
+    visit_occurrence_id = db.Column(db.Integer(), primary_key=True)
+    person_id = db.Column(db.Integer(), default=None)
+    visit_concept_id = db.Column(db.Integer(), default=None)
+    visit_start_date = db.Column(db.Date(), default=None)
+    visit_start_datetime = db.Column(db.DateTime(), default=None)
+    visit_end_date = db.Column(db.Date(), default=None)
+    visit_end_datetime = db.Column(db.DateTime(), default=None)
+    visit_type_concept_id = db.Column(db.Integer(), default=None)
+    provider_id = db.Column(db.Integer(), default=None)
+    care_site_id = db.Column(db.Integer(), default=None)
+    visit_source_value = db.Column(db.Integer(), default=None)
+    visit_source_concept_id = db.Column(db.Integer(), default=None)
+    admitting_source_concept_id = db.Column(db.Integer(), default=None)
+    admitting_source_value = db.Column(db.String(), default=None)
+    discharge_to_concept_id = db.Column(db.Integer(), default=None)
+    discharge_to_source_value = db.Column(db.String(), default=None)
+    preceding_visit_occurrence_id = db.Column(db.Integer(), default=None)
