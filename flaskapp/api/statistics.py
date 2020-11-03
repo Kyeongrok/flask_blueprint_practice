@@ -52,6 +52,27 @@ def visit_by_value(concept_column_name):
         l.append({'gender':r[0], 'count':r[1]})
     return l
 
+def visit_by_age_range():
+    result = db.engine.execute('''
+    select
+      sum(case when date_part('year', AGE(p1.birth_datetime))<10 then 1 end) as "age<10",
+      sum(case when date_part('year', age(p1.birth_datetime))>=10 and date_part('year', AGE(p1.birth_datetime))<20 then 1 end) as "10<age<20",
+      sum(case when date_part('year', age(p1.birth_datetime))>=20 and date_part('year', age(p1.birth_datetime))<30 then 1 end) AS "20<age<30",
+      sum(case when date_part('year', age(p1.birth_datetime))>=30 and date_part('year', age(p1.birth_datetime))<40 then 1 end) AS "30<age<40",
+      sum(case when date_part('year', age(p1.birth_datetime))>=40 and date_part('year', age(p1.birth_datetime))<50 then 1 end) AS "40<age<50",
+      sum(case when date_part('year', age(p1.birth_datetime))>=50 and date_part('year', age(p1.birth_datetime))<60 then 1 end) AS "50<age<60",
+      sum(case when date_part('year', AGE(p1.birth_datetime))>=60 and date_part('year', age(p1.birth_datetime))<70 then 1 end) AS "60<age<70",  
+      sum(case when date_part('year', AGE(p1.birth_datetime))>=70 and date_part('year', age(p1.birth_datetime))<80 then 1 end) AS "70<age<80",  
+      sum(case when date_part('year', AGE(p1.birth_datetime))>=80 then 1 end) AS "70<age"
+    from
+      visit_occurrence
+    INNER JOIN person AS p1 ON visit_occurrence.person_id = p1.person_id
+    ''')
+
+
+    for r in result:
+        return list(r)
+
 @main.route("/person")
 class StatisticsPerson(Resource):
     def get(self):
@@ -84,17 +105,6 @@ class StatisticsPerson2(Resource):
     def get(self):
 
         person_aliased = aliased(Person)
-        # stmt = db.session.query(Person.gender_concept_id, VisitOccurrence.person_id, person_aliased.gender_concept_id.label('g'))\
-        #     .join(person_aliased, VisitOccurrence.person_id == person_aliased.person_id)\
-        #     .all()
-        # print(stmt)
-        # .group_by(person_aliased.gender_concept_id) \
-        # stmt2 = db.session.query(stmt)\
-        #     .all()
-        #     # .all()
-        # print('=>', stmt2)
-        # for row in stmt2:
-        #     print(row)
 
 
 
@@ -113,12 +123,24 @@ class StatisticsPerson(Resource):
         l_visit_by_gender = visit_by_concept(Person.gender_concept_id, 'gender_concept_id')
         l_visit_by_ethnicity = visit_by_value('ethnicity_source_value')
         l_visit_by_race = visit_by_concept(Person.race_concept_id, 'race_concept_id')
+        l_visit_by_age = visit_by_age_range()
         return {
             'Description':'환자가 방문한 내역',
             'Data':{
                 'visit_type':l_visit_type,
                 'visit_by_gender':l_visit_by_gender,
                 'visit_by_ethnicity':l_visit_by_ethnicity,
-                'visit_by_race':l_visit_by_race
+                'visit_by_race':l_visit_by_race,
+                'visit_by_age':{
+                    '0=<age<10':l_visit_by_age[0],
+                    '10=<age<20':l_visit_by_age[1],
+                    '20=<age<30':l_visit_by_age[2],
+                    '30=<age<40':l_visit_by_age[3],
+                    '40=<age<50':l_visit_by_age[4],
+                    '50=<age<60':l_visit_by_age[5],
+                    '60=<age<70':l_visit_by_age[6],
+                    '70=<age<80':l_visit_by_age[7],
+                    '80=<age':l_visit_by_age[8]
+                }
             }
         }
